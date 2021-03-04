@@ -1,0 +1,5 @@
+Download the embedding files from https://nlp.stanford.edu/projects/glove/.
+Unpack them to this directory.
+Some examples are:
+glove.6B.50d.txt
+glove.6B.300d.txt
