@@ -6,5 +6,7 @@ The TESCAS tool requires the following software and packages. Once python is ins
 
 1) [Python 3](https://www.python.org/) (developed for Python 3.7)
 2) [numpy](https://numpy.org/), `pip install numpy`
-3) [NLTK](https://www.nltk.org/), `pip install --user -U nltk`
+3) [matplotlib](https://matplotlib.org//), `python -m pip install -U matplotlib`
+4) [NLTK](https://www.nltk.org/), `pip install --user -U nltk`
+5) [scipy](https://www.scipy.org/), `python -m pip install --user scipy`
 

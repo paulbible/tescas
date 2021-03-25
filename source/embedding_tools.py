@@ -1,5 +1,5 @@
 """
-A tools file to collect some reusable embedding functions
+    A tools file to collect some reusable embedding functions
 """
 import numpy as np
 
@@ -155,3 +155,24 @@ def search_similar(word_map, matrix, query, threshold=0.95):
         test_vector = matrix[i]
         if cossim(test_vector, vector) >= threshold:
             print(words[i])
+
+
+def parse_weight_map(filename):
+    weight_map = {}
+    with open(filename) as f:
+        for line in f:
+            line = line.strip()
+            if len(line) == 0:
+                continue
+            parts = line.strip('\t')
+            weight_map[parts[0]] = float(parts[1])
+    return weight_map
+
+
+def write_weight_map(filename, weight_map):
+    with open(filename, 'w', encoding='utf-8') as fout:
+        for word in weight_map:
+            outstr = word + '\t' + str(weight_map[word]) + '\n'
+            fout.write(outstr)
+
+# newline

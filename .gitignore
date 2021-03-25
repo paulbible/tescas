@@ -1,1 +1,4 @@
 /data/embeddings/glove.6B.50d.txt
+/data/word_weightings/sotu_weights.txt
+/venv
+/.idea
