@@ -23,8 +23,8 @@ def main():
     argument_map = parse_function()
     input_folder = opth.validate_required('input', argument_map, print_usage_func)
     output_filename = opth.validate_required('output', argument_map, print_usage_func)
-    print(input_folder)
-    print(output_filename)
+    # print(input_folder)
+    # print(output_filename)
 
     sentence_db_temp = []
     file_labels_temp = []

@@ -36,6 +36,14 @@ def cluster_and_plot_ops():
         'description': 'The file containing the vocabulary word weightings.',
         'optional': False
     }
+    options['save'] = {
+        'order': 4,
+        'short': 's',
+        'long': 'save',
+        'input_name': '<image_file>',
+        'description': 'A file to save the plot as an image (png).',
+        'optional': True
+    }
     return options
 
 

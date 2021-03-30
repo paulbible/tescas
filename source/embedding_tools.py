@@ -2,6 +2,10 @@
     A tools file to collect some reusable embedding functions
 """
 import numpy as np
+from collections import defaultdict
+import os
+import nltk_tools
+import string
 
 
 def load_embeddings(filename):
@@ -159,13 +163,18 @@ def search_similar(word_map, matrix, query, threshold=0.95):
 
 def parse_weight_map(filename):
     weight_map = {}
-    with open(filename) as f:
+    with open(filename, encoding='utf-8', errors='ignore') as f:
         for line in f:
             line = line.strip()
             if len(line) == 0:
                 continue
-            parts = line.strip('\t')
-            weight_map[parts[0]] = float(parts[1])
+            parts = line.split('\t')
+            # try:
+            #     weight_map[parts[0]] = float(parts[1])
+            # except:
+            #     print(line)
+            #     print(parts)
+            #     input()
     return weight_map
 
 
@@ -174,5 +183,74 @@ def write_weight_map(filename, weight_map):
         for word in weight_map:
             outstr = word + '\t' + str(weight_map[word]) + '\n'
             fout.write(outstr)
+
+
+def build_sentence_database(input_folder):
+    sentence_db = []
+    file_labels = []
+
+    idf_counts = defaultdict(int)
+    # Document frequency loop
+    files_to_process = os.listdir(input_folder)
+    for filename in files_to_process:
+        full_filename = os.path.join(input_folder, filename)
+        with open(full_filename, encoding='utf-8', errors='ignore') as f:
+            data = f.read()
+            # get all sentences form the file
+            current_sentences = nltk_tools.tokenize(data, 'sentence')
+
+            for sentence in current_sentences:
+                sentence_db.append(sentence)
+                file_labels.append(filename)
+
+    return sentence_db, file_labels
+
+
+def calculate_sentence_vectors_tfidf(input_folder, weight_map, word_map, matrix):
+    """
+    Maskes some use of these ideas
+    https://medium.com/analytics-vidhya/tf-idf-term-frequency-technique-easiest-explanation-for-text-classification-in-nlp-with-code-8ca3912e58c3
+    https://hackernoon.com/finding-the-most-important-sentences-using-nlp-tf-idf-3065028897a3
+
+    :param input_folder:
+    :param weight_map:
+    :param word_map:
+    :param matrix:
+    :return:
+    """
+    sentence_db_raw, file_labels_raw = build_sentence_database(input_folder)
+    doc_count = len(sentence_db_raw)
+
+    sent_vectors_database = []      # database of sentence vectors
+    sentence_database= []           # database list of processed sentences
+    sentence_labels = []            # these file names will help identify sentences
+
+    # for each sentence
+    for i in range(doc_count):
+        sentence = sentence_db_raw[i]
+        sentence_label = file_labels_raw[i]
+
+        sentence = nltk_tools.clean_sentence(sentence)
+
+        word_list = nltk_tools.tokenize(sentence, 'word')
+        word_list = nltk_tools.filter_stopwords_list_to_list(word_list)
+
+        # discard any empty sentences (skip them)
+        if len(word_list) <= 0:
+            continue
+
+        # caculate word vector
+        sent_vec = reduce_sum_word_list_weighted(word_list, word_map, matrix, weight_map)
+        # add the transformed data to the data storage variables
+        sentence_database.append(sentence)
+        sent_vectors_database.append(sent_vec)
+        # add the filename to a list too
+        sentence_labels.append(sentence_label)
+
+    return sent_vectors_database, sentence_database, sentence_labels
+
+
+
+
 
 # newline
