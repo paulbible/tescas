@@ -14,6 +14,7 @@ def calc_word_weightings_ops():
     options['output']['description'] = 'An output file name for the tab-delimited, 2-column weightings map.'
     return options
 
+
 def cluster_and_plot_ops():
     # Create some options for the tool.
     options = opth.default_option_map_input()
@@ -81,52 +82,38 @@ def cluster_sentences_ops():
     return options
 
 
-def cluster_text_tool_ops():
+def summarize_clusters_word_pairs_ops():
     # Create some options for the tool.
     options = opth.default_option_map_input_output()
     # modify default descriptions for input and output
-    options['input']['description'] = 'An input folder with each document represented as a single text file.'
-    options['input']['input_name'] = '<input_folder>'
-    options['output']['description'] = 'An output file name for the clustered sentence table.'
+    options['input']['description'] = 'A comma separated file of sentences as rows with clusters labeled.'
+    options['input']['input_name'] = '<cluster_file>'
+    options['output']['description'] = 'An output file name for the word distribution data (CSV).'
     # add custom options
-    options['embedding'] = {
+    options['topN'] = {
         'order': 3,
-        'short': 'e',
-        'long': 'embedding',
-        'input_name': '<embedding_file>',
-        'description': 'The file containing the vector space embedded vocabulary.',
-        'optional': False
+        'short': 'n',
+        'long': 'topN',
+        'input_name': '<number>',
+        'description': 'Return the N word pairs with the highest count for each cluster. (default: 10)',
+        'optional': True
     }
-    options['num_clusters'] = {
+    options['cutoff'] = {
         'order': 4,
-        'short': 'k',
-        'long': 'num_clusters',
-        'input_name': '<num_clusters>',
-        'description': 'The number of sentence clusters to partition the sentences into.',
-        'optional': False
+        'short': 'c',
+        'long': 'cutoff',
+        'input_name': '<count_limit>',
+        'description': 'Filter word pairs with less that <count_limit> occurrences. (default: 1)',
+        'optional': True
     }
-    options['stopfilter'] = {
+    options['percent'] = {
         'order': 5,
-        'short': 's',
-        'long': 'stopfilter',
-        'input_name': None,
-        'description': 'Filter out stopwords (a, an ,the, etc.) before clustering',
-        'optional': True
-    }
-    options['pos'] = {
-        'order': 6,
         'short': 'p',
-        'long': 'pos',
-        'input_name': None,
-        'description': 'Keep only words that are a major part of speech (Nouns, Verbs, Adjectives, and Adverbs).',
-        'optional': True
-    }
-    options['tfidf'] = {
-        'order': 6,
-        'short': 't',
-        'long': 'tfidf',
-        'input_name': None,
-        'description': 'Apply an inverse document frequency weighting. log(#sentences/#setnences with word)',
+        'long': 'percent',
+        'input_name': '<percent_limit>',
+        'description': 'Filter word pairs that account for less than <percent_limit> of cluster words (default: 0.0)',
         'optional': True
     }
     return options
+
+# newline

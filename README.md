@@ -10,3 +10,34 @@ The TESCAS tool requires the following software and packages. Once python is ins
 4) [NLTK](https://www.nltk.org/), `pip install --user -U nltk`
 5) [scipy](https://www.scipy.org/), `python -m pip install --user scipy`
 
+## Usage
+To use TESCAS, place your text speeches into a folder then modify the `driver_script.py`.
+
+Check that the path to your python command is correct in `driver_script.py`, and modify the section that looks like this:
+
+```
+    #############################################################
+    # Set data set locations here.
+    # use a unique folder for each modeling / training data set.
+    data_set_folder = 'sotu'
+    embedding = 'glove.6B.50d.txt'
+    save_cluster_plot = True
+    cluster_number = 15
+```
+
+### Configure which stages to run in the processing pipeline
+
+#### The pipeline stages are:
+* 0 Calculate word weightings
+* 1 Explore the corpus clustering plot, helps choose number of clusters
+* 2 Perform sentence clustering
+* 3 Summarize the cluster content using pair word usage statistics.
+
+Either uncomment this line to run all stages:
+```
+stages_to_run = set(list(range(stages)))
+```
+Or set the specific stages to run here:
+```
+stages_to_run = {0, 2, 3}
+```

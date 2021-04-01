@@ -5,6 +5,8 @@ import nltk
 from nltk.corpus import stopwords
 import string
 
+stops = stopwords.words('english')
+
 
 def tokenize(data,method='word'):
     if method == 'word':
@@ -24,7 +26,7 @@ def clean_sentence(sentence):
     # remove trailing whitespace
     sentence = sentence.strip()
     # remove trailing punctuation.
-    sentence.strip(string.punctuation)
+    sentence = sentence.strip(string.punctuation)
     return sentence
 
 
