@@ -1,0 +1,2 @@
+This folder holds the output data for a run of the tool.
+Tool will organize runs into sub folders in this directory.

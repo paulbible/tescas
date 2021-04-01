@@ -47,6 +47,40 @@ def cluster_and_plot_ops():
     return options
 
 
+def cluster_sentences_ops():
+    # Create some options for the tool.
+    options = opth.default_option_map_input_output()
+    # modify default descriptions for input and output
+    options['input']['description'] = 'An input folder with each document represented as a single text file.'
+    options['input']['input_name'] = '<input_folder>'
+    options['output']['description'] = 'An output file name for the clustered sentence table.'
+    options['embedding'] = {
+        'order': 3,
+        'short': 'e',
+        'long': 'embedding',
+        'input_name': '<embedding_file>',
+        'description': 'The file containing the vector space embedded vocabulary.',
+        'optional': False
+    }
+    options['weightings'] = {
+        'order': 4,
+        'short': 'w',
+        'long': 'weightings',
+        'input_name': '<weightings_file>',
+        'description': 'The file containing the vocabulary word weightings.',
+        'optional': False
+    }
+    options['num_clusters'] = {
+        'order': 5,
+        'short': 'k',
+        'long': 'num_clusters',
+        'input_name': '<num_clusters>',
+        'description': 'The number of sentence clusters to partition the sentences into.',
+        'optional': False
+    }
+    return options
+
+
 def cluster_text_tool_ops():
     # Create some options for the tool.
     options = opth.default_option_map_input_output()

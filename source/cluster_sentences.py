@@ -1,30 +1,28 @@
 """
-    A tool to cluster and plot sentences in a cluster.
-    This tool help explore a cluster and pick a good k
-    for the number of clusters.
+    This program clusters sentences and writes the results to a labeled table.
 """
 import embedding_tools as et
 import option_helpers as opth
-from script_options import cluster_and_plot_ops
+from script_options import cluster_sentences_ops
 import numpy as np
-from scipy.cluster.hierarchy import linkage
+from scipy.cluster.hierarchy import linkage, fcluster
 from scipy.spatial.distance import pdist
-from matplotlib import pyplot as plt
 
 
 def main():
     # ######### Parse and validate options ##########
-    options = cluster_and_plot_ops()
-    print_usage_func = opth.print_usage_maker('This is a tool for exploring clusters with plots.',
+    options = cluster_sentences_ops()
+    print_usage_func = opth.print_usage_maker('This is a tool for clusters sentences in an embedding space.',
                                               options)
     parse_function = opth.parse_options_maker(options, print_usage_func)
 
     # collect input command line arguments and validate
     argument_map = parse_function()
     input_folder = opth.validate_required('input', argument_map, print_usage_func)
+    output_filename = opth.validate_required('output', argument_map, print_usage_func)
     embedding_filename = opth.validate_required('embedding', argument_map, print_usage_func)
     weighting_filename = opth.validate_required('weightings', argument_map, print_usage_func)
-    save_file = opth.with_default('save', argument_map, None)
+    num_clusters = opth.validate_required_int('num_clusters', argument_map, print_usage_func)
 
     # ########## Load Embeddings and Word Frequency Weightings ##########
     # load the word weighting map
@@ -39,25 +37,29 @@ def main():
     # ########## Format and Numpy Matrix and Cluster ##########
     # convert to matrix and prepare to cluster
     sent_mat = np.array(sent_vectors_database)
+    row_number = sent_mat.shape[0]
     # do the actual clustering, calculate distances, cluster linkage.
     y = pdist(sent_mat, 'cosine')  # define distance between points (sentence vectors)
     z = linkage(y, 'ward')  # define linkage, how to group points together
 
-    # ########## Plot and Save Figure ##########
-    last = z[-50:, 2]
-    last_rev = last[::-1]
-    indexes = np.arange(1, len(last) + 1)
-    plt.plot(indexes, last_rev)
+    # get the actual cluster labels
+    cluster_labels = fcluster(z, num_clusters, criterion='maxclust')
 
-    acceleration = np.diff(last, 2)  # 2nd derivative of the distances
-    acceleration_rev = acceleration[::-1]
-    plt.plot(indexes[:-2] + 1, acceleration_rev)
+    # open the output file
+    # one of the sentences has a unicode that causes problems. make the output utf-8 too.
+    file_out = open(output_filename, 'w', encoding='utf-8')
+    header = ['Sentence', 'cluster', 'file']
+    file_out.write(','.join(header) + '\n')
 
-    if save_file:
-        plt.savefig(save_file, bbox_inches='tight')
-    else:
-        plt.show()
+    for i in range(row_number):
+        # sentences have commas, so take them out.
+        sentence_string = sentence_database[i].replace(',', ' ')
+        outputs = [sentence_string, str(cluster_labels[i]), sentence_labels[i]]
+        # use 'join' to create the row string
+        file_out.write(','.join(outputs) + '\n')
+    file_out.close()
 
 
 main()
 
+# newline

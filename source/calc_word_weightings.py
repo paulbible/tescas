@@ -6,6 +6,7 @@ import os
 import string
 import math
 import nltk
+from nltk_tools import tokenize, clean_sentence
 import option_helpers as opth
 from script_options import calc_word_weightings_ops
 from collections import defaultdict
@@ -37,19 +38,16 @@ def main():
         with open(full_filename, encoding='utf-8', errors='ignore') as f:
             data = f.read()
             # get all sentences form the file
-            current_sentences = nltk.sent_tokenize(data)
+            current_sentences = tokenize(data, 'sentence')
 
             for sentence in current_sentences:
                 sentence_db_temp.append(sentence)
                 file_labels_temp.append(filename)
 
                 # remove newlines
-                sentence = sentence.replace('\n', ' ')
-                sentence.strip()
-                # remove trailing punctuation.
-                sentence.strip(string.punctuation)
+                sentence = clean_sentence(sentence)
 
-                word_list = nltk.word_tokenize(sentence)
+                word_list = tokenize(sentence, 'word')
                 for word in set(word_list):
                     # add 1 for each sentence where the sentence is found.
                     idf_counts[word.lower()] += 1

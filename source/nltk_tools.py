@@ -21,6 +21,8 @@ def clean_sentence(sentence):
     """
     # remove newlines
     sentence = sentence.replace('\n', ' ')
+    # remove trailing whitespace
+    sentence = sentence.strip()
     # remove trailing punctuation.
     sentence.strip(string.punctuation)
     return sentence
