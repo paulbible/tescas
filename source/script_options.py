@@ -116,4 +116,23 @@ def summarize_clusters_word_pairs_ops():
     }
     return options
 
+
+def create_count_matrix_ops():
+    # Create some options for the tool.
+    options = opth.default_option_map_input_output()
+    # modify default descriptions for input and output
+    options['input']['description'] = 'A comma separated file of sentences as rows with clusters labeled.'
+    options['input']['input_name'] = '<cluster_file>'
+    options['output']['description'] = 'An output file name for count matrix data (CSV).'
+    # add custom options
+    options['list'] = {
+        'order': 3,
+        'short': 'l',
+        'long': 'list',
+        'input_name': '<list>',
+        'description': 'A list of names to order the output. These are a text file of file names.',
+        'optional': True
+    }
+    return options
+
 # newline

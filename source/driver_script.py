@@ -12,24 +12,29 @@ def main():
     # Set data set locations here.
     # use a unique folder for each modeling / training data set.
     data_set_folder = 'sotu'
+
+    # a text file providing an ordered list of speeches
+    # this file should be in the speeches folder
+    data_set_document_list = 'sotu_order_list.txt'
     embedding = 'glove.6B.50d.txt'
     save_cluster_plot = True
     cluster_number = 15
 
     #############################################################
     # Configure which stages to run in the processing pipeline
-    stages = 4      # total number of stages
+    stages = 5      # total number of stages
     # # The pipeline stages are:
     # 0 Calculate word weightings
     # 1 Explore the corpus clustering plot, helps choose number of clusters
     # 2 Perform sentence clustering
     # 3 Summarize the cluster content using pair word usage statistics.
+    # 4 Convert clustered sentences into cluster count matrix
 
     # # run all stages
     # stages_to_run = set(list(range(stages)))
 
     # set the following list to run specific parts of the pipeline
-    stages_to_run = {3}
+    stages_to_run = {4}
 
     #############################################################
     # Set up your environment here
@@ -50,11 +55,13 @@ def main():
 
     # these files and folder are generated specific to a data set
     speech_folder = os.path.join(speeches_folder, data_set_folder)
+    speech_list_filename = os.path.join(speeches_folder, data_set_document_list)
     weight_filename = data_set_folder + '_weights.txt'
     word_weight_file = os.path.join(weightings_folder, weight_filename)
     embedding_filename = os.path.join(embeddings_folder, embedding)
     cluster_plot_name = data_set_folder + '_cluster_plot.png'
     cluster_plot_filename = os.path.join(images_foler, cluster_plot_name)
+
 
     # now = datetime.now()
     # time_string = now.strftime('%Y-%m-%d_%H-%M')
@@ -71,6 +78,10 @@ def main():
     sentence_clusters_filename = os.path.join(run_output_folder_path, sentence_clusters_name)
     word_pairs_summary_name = data_set_folder + '_cluster_word_pairs.csv'
     word_pairs_summary_filename = os.path.join(run_output_folder_path, word_pairs_summary_name)
+
+    # regression files
+    count_matrix_name = data_set_folder + '_cluster_count_matrix.csv'
+    count_matrix_filename = os.path.join(run_output_folder_path, count_matrix_name)
 
     ######################################
     # ##### Stage 0: Word Weightings #####
@@ -122,6 +133,20 @@ def main():
                 '-i', sentence_clusters_filename,
                 '-o', word_pairs_summary_filename,
                 '-n', str(15)]
+        print('## running: ', ' '.join(args))
+        subprocess.run(args)
+        print('## completed stage 3')
+        print()
+
+    ######################################################
+    # ##### Stage 4: Create Cluster count matrix     #####
+    if 4 in stages_to_run:
+        print('##### Creating cluster count matrix for ', os.path.basename(speech_folder))
+        # speech_list_filename
+        args = [python_command, 'create_count_matrix.py',
+                '-i', sentence_clusters_filename,
+                '-o', count_matrix_filename,
+                '-l', speech_list_filename]
         print('## running: ', ' '.join(args))
         subprocess.run(args)
         print('## completed stage 2')

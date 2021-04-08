@@ -241,6 +241,12 @@ def calculate_sentence_vectors_tfidf(input_folder, weight_map, word_map, matrix)
 
         # caculate word vector
         sent_vec = reduce_sum_word_list_weighted(word_list, word_map, matrix, weight_map)
+
+        # discard sentences that contain no words from the embedding database, not much can be done here.
+        # examples 'H.R.3' and 'Janiyah'
+        if np.linalg.norm(sent_vec) < 1e-6:
+            continue
+
         # add the transformed data to the data storage variables
         sentence_database.append(sentence)
         sent_vectors_database.append(sent_vec)
