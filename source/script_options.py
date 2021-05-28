@@ -117,6 +117,48 @@ def summarize_clusters_word_pairs_ops():
     return options
 
 
+def summarize_clusters_core_sentences():
+    # Create some options for the tool.
+    options = opth.default_option_map_input_output()
+    # modify default descriptions for input and output
+    options['input']['description'] = 'An input folder with each document represented as a single text file.'
+    options['input']['input_name'] = '<input_folder>'
+    options['output']['description'] = 'An output file name for the core sentence data (CSV).'
+    options['embedding'] = {
+        'order': 3,
+        'short': 'e',
+        'long': 'embedding',
+        'input_name': '<embedding_file>',
+        'description': 'The file containing the vector space embedded vocabulary.',
+        'optional': False
+    }
+    options['weightings'] = {
+        'order': 4,
+        'short': 'w',
+        'long': 'weightings',
+        'input_name': '<weightings_file>',
+        'description': 'The file containing the vocabulary word weightings.',
+        'optional': False
+    }
+    options['num_clusters'] = {
+        'order': 5,
+        'short': 'k',
+        'long': 'num_clusters',
+        'input_name': '<num_clusters>',
+        'description': 'The number of sentence clusters to partition the sentences into.',
+        'optional': False
+    }
+    options['topN'] = {
+        'order': 6,
+        'short': 'n',
+        'long': 'topN',
+        'input_name': '<number>',
+        'description': 'Return the N sentences closest to the cluster mean. (default: 5)',
+        'optional': True
+    }
+    return options
+
+
 def create_count_matrix_ops():
     # Create some options for the tool.
     options = opth.default_option_map_input_output()

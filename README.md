@@ -9,6 +9,7 @@ The TESCAS tool requires the following software and packages. Once python is ins
 3) [matplotlib](https://matplotlib.org//), `python -m pip install -U matplotlib`
 4) [NLTK](https://www.nltk.org/), `pip install --user -U nltk`
 5) [scipy](https://www.scipy.org/), `python -m pip install --user scipy`
+6) [scikit-learn](https://scikit-learn.org/stable/index.html) `pip install -U scikit-learn`
 
 ## Usage
 To use TESCAS, place your text speeches into a folder then modify the `driver_script.py`.
@@ -28,10 +29,12 @@ Check that the path to your python command is correct in `driver_script.py`, and
 ### Configure which stages to run in the processing pipeline
 
 #### The pipeline stages are:
-* 0 Calculate word weightings
-* 1 Explore the corpus clustering plot, helps choose number of clusters
-* 2 Perform sentence clustering
-* 3 Summarize the cluster content using pair word usage statistics.
+* **0** Calculate word weightings
+* **1** Explore the corpus clustering plot, helps choose number of clusters
+* **2** Perform sentence clustering
+* **3** Summarize the cluster content using pair word usage statistics.
+* **4** Summarize the cluster content using core sentences.
+* **5** Create a matrix of cluster counts for each speech.
 
 Either uncomment this line to run all stages:
 ```
@@ -41,3 +44,4 @@ Or set the specific stages to run here:
 ```
 stages_to_run = {0, 2, 3}
 ```
+
