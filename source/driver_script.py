@@ -12,17 +12,20 @@ def main():
     # Set data set locations here.
     # use a unique folder for each modeling / training data set.
     data_set_folder = 'sotu'
+    # data_set_folder = 'ATE'
 
     # a text file providing an ordered list of speeches
     # this file should be in the speeches folder
     data_set_document_list = 'sotu_order_list.txt'
+    # data_set_document_list = 'ATE_order_list.txt'
     embedding = 'glove.6B.50d.txt'
     save_cluster_plot = True
     cluster_number = 23
+    # cluster_number = 16
 
     #############################################################
     # Configure which stages to run in the processing pipeline
-    stages = 6      # total number of stages
+    stages = 7      # total number of stages
     # # The pipeline stages are:
     # 0 Calculate word weightings
     # 1 Explore the corpus clustering plot, helps choose number of clusters
@@ -30,12 +33,13 @@ def main():
     # 3 Summarize the cluster content using pair word usage statistics.
     # 4 Summarize the cluster content using core sentences
     # 5 Convert clustered sentences into cluster count matrix
+    # 6 Extract central vectors for nearest neighbor classification.
 
     # # run all stages
-    stages_to_run = set(list(range(stages)))
+    # stages_to_run = set(list(range(stages)))
 
     # set the following list to run specific parts of the pipeline
-    # stages_to_run = {4}
+    stages_to_run = {6}
 
     #############################################################
     # Set up your environment here
@@ -84,6 +88,10 @@ def main():
     # regression files
     count_matrix_name = data_set_folder + '_cluster_count_matrix.csv'
     count_matrix_filename = os.path.join(run_output_folder_path, count_matrix_name)
+
+    # Classification files, center vectors
+    central_vectors_name = data_set_folder + '_center_vectors.csv'
+    central_vectors_filename = os.path.join(run_output_folder_path, central_vectors_name)
 
     ######################################
     # ##### Stage 0: Word Weightings #####
@@ -143,7 +151,7 @@ def main():
     #########################################################
     # ##### Stage 4: Summarize Clusters, Core Sentences #####
     if 4 in stages_to_run:
-        print('##### Summurizaing Clusters with Core Sentences in ', os.path.basename(speech_folder))
+        print('##### Summarizing Clusters with Core Sentences in ', os.path.basename(speech_folder))
         # speech_list_filename
         args = [python_command, 'summarize_clusters_core_sentences.py',
                 '-i', speech_folder,
@@ -169,6 +177,22 @@ def main():
         print('## running: ', ' '.join(args))
         subprocess.run(args)
         print('## completed stage 5')
+        print()
+
+    ##############################################
+    # ##### Stage 6: Extract Cluster Centers #####
+    if 6 in stages_to_run:
+        print('##### Extracting Cluster Center vectors ', os.path.basename(speech_folder))
+        # speech_list_filename
+        args = [python_command, 'extract_cluster_centers.py',
+                '-i', speech_folder,
+                '-o', central_vectors_filename,
+                '-e', embedding_filename,
+                '-w', word_weight_file,
+                '-k', str(cluster_number)]
+        print('## running: ', ' '.join(args))
+        # subprocess.run(args)
+        print('## completed stage 6')
         print()
 
 

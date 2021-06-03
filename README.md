@@ -35,6 +35,7 @@ Check that the path to your python command is correct in `driver_script.py`, and
 * **3** Summarize the cluster content using pair word usage statistics.
 * **4** Summarize the cluster content using core sentences.
 * **5** Create a matrix of cluster counts for each speech.
+* **6** Extract the cluster centers for use in a classifier
 
 Either uncomment this line to run all stages:
 ```

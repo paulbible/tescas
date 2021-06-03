@@ -1,9 +1,9 @@
 """
-    This program clusters sentences and writes the results to a labeled table.
+    This program extracts cluster centers for use in other applications such as classification.
 """
 import embedding_tools as et
 import option_helpers as opth
-from script_options import summarize_clusters_core_sentences_ops
+from script_options import extract_cluster_centers_ops
 import numpy as np
 from scipy.cluster.hierarchy import linkage, fcluster
 from scipy.spatial.distance import pdist, cosine
@@ -18,25 +18,11 @@ def get_cluster_index_map(cluster_labels):
     return cluster_map
 
 
-def top_n_indexes(indexes, sent_mat, n):
-    cluster_mat = sent_mat[np.array(indexes), :]
-    mean_vector = cluster_mat.mean(axis=0)
-    distances = []
-    for index in indexes:
-        vector = sent_mat[index, :]
-        distance = cosine(vector, mean_vector)
-        distances.append((distance, index))
-
-    distances.sort(reverse=True)
-    num_indexes = min(n, len(distances))
-    top_indexes = [i for (d, i) in distances[:num_indexes]]
-    return top_indexes
-
-
 def main():
     # ######### Parse and validate options ##########
-    options = summarize_clusters_core_sentences_ops()
-    print_usage_func = opth.print_usage_maker('This is a tool for summarizing clusters using core sentences.',
+    options = extract_cluster_centers_ops()
+    print_usage_func = opth.print_usage_maker('This tool extracts the mean vector '
+                                              'for each cluster for use in classification.',
                                               options)
     parse_function = opth.parse_options_maker(options, print_usage_func)
 
@@ -47,7 +33,6 @@ def main():
     embedding_filename = opth.validate_required('embedding', argument_map, print_usage_func)
     weighting_filename = opth.validate_required('weightings', argument_map, print_usage_func)
     num_clusters = opth.validate_required_int('num_clusters', argument_map, print_usage_func)
-    top_n = opth.with_default_int('topN', argument_map, 5)
 
     # ########## Load Embeddings and Word Frequency Weightings ##########
     # load the word weighting map
@@ -75,22 +60,19 @@ def main():
     # 'fcluster' omits 0 as a cluster label (cluster are 1 to k).
     cluster_keys = range(1, num_clusters + 1)
 
-    output_data = []
+    cluster_center_map = {}
     for current_cluster in cluster_keys:
         indexes = cluster_index_map[current_cluster]
-        top_indexes = top_n_indexes(indexes, sent_mat, top_n)
-        for index in top_indexes:
-            sentence = sentence_database[index].replace(',', ' ')
-            output_rec = [sentence, str(current_cluster), sentence_labels[index]]
-            output_data.append(output_rec)
+        cluster_mat = sent_mat[np.array(indexes), :]
+        mean_vector = cluster_mat.mean(axis=0)
+        cluster_center_map[current_cluster] = mean_vector
 
-    header = ['sentence','cluster','speech']
     with open(output_filename, 'w') as fout:
-        fout.write(','.join(header) + '\n')
-        for output in output_data:
+        for current_cluster in cluster_center_map:
+            output = [str(current_cluster)]
+            mean_vector = cluster_center_map[current_cluster]
+            output.extend(map(str, mean_vector))
             fout.write(','.join(output) + '\n')
 
 
 main()
-
-# newline

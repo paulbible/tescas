@@ -117,7 +117,7 @@ def summarize_clusters_word_pairs_ops():
     return options
 
 
-def summarize_clusters_core_sentences():
+def summarize_clusters_core_sentences_ops():
     # Create some options for the tool.
     options = opth.default_option_map_input_output()
     # modify default descriptions for input and output
@@ -174,6 +174,40 @@ def create_count_matrix_ops():
         'input_name': '<list>',
         'description': 'A list of names to order the output. These are a text file of file names.',
         'optional': True
+    }
+    return options
+
+
+def extract_cluster_centers_ops():
+    # Create some options for the tool.
+    options = opth.default_option_map_input_output()
+    # modify default descriptions for input and output
+    options['input']['description'] = 'An input folder with each document represented as a single text file.'
+    options['input']['input_name'] = '<input_folder>'
+    options['output']['description'] = 'An output file name for the cluster center vectors (CSV).'
+    options['embedding'] = {
+        'order': 3,
+        'short': 'e',
+        'long': 'embedding',
+        'input_name': '<embedding_file>',
+        'description': 'The file containing the vector space embedded vocabulary.',
+        'optional': False
+    }
+    options['weightings'] = {
+        'order': 4,
+        'short': 'w',
+        'long': 'weightings',
+        'input_name': '<weightings_file>',
+        'description': 'The file containing the vocabulary word weightings.',
+        'optional': False
+    }
+    options['num_clusters'] = {
+        'order': 5,
+        'short': 'k',
+        'long': 'num_clusters',
+        'input_name': '<num_clusters>',
+        'description': 'The number of sentence clusters to partition the sentences into.',
+        'optional': False
     }
     return options
 
