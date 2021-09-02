@@ -6,6 +6,7 @@ from collections import defaultdict
 import os
 import nltk_tools
 import string
+import math
 
 
 def load_embeddings(filename):
@@ -159,6 +160,42 @@ def search_similar(word_map, matrix, query, threshold=0.95):
         test_vector = matrix[i]
         if cossim(test_vector, vector) >= threshold:
             print(words[i])
+
+
+def calculate_tf_weightings(input_folder):
+    sentence_db_temp = []
+    file_labels_temp = []
+
+    idf_counts = defaultdict(int)
+    # Document frequency loop
+    files_to_process = os.listdir(input_folder)
+    for filename in files_to_process:
+        full_filename = os.path.join(input_folder, filename)
+        with open(full_filename, encoding='utf-8', errors='ignore') as f:
+            data = f.read()
+            # get all sentences form the file
+            current_sentences = nltk_tools.tokenize(data, 'sentence')
+
+            for sentence in current_sentences:
+                sentence_db_temp.append(sentence)
+                file_labels_temp.append(filename)
+
+                # remove newlines
+                sentence = nltk_tools.clean_sentence(sentence)
+
+                word_list = nltk_tools.tokenize(sentence, 'word')
+                for word in set(word_list):
+                    # add 1 for each sentence where the sentence is found.
+                    idf_counts[word.lower()] += 1
+
+    idf_weights = {}
+    doc_count = len(sentence_db_temp)
+    for word in idf_counts:
+        # create a weight for very word that reflects how many sentences it appears in
+        # Words appearing in nearly every sentence will be near 0. Words that are uncommon get higher weighting.
+        idf_weights[word] = math.log(doc_count / idf_counts[word])
+
+    return idf_weights, doc_count
 
 
 def parse_weight_map(filename):

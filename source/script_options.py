@@ -211,4 +211,38 @@ def extract_cluster_centers_ops():
     }
     return options
 
+
+def classify_sentences_nearest_center_ops():
+    # Create some options for the tool.
+    options = opth.default_option_map_input_output()
+    # modify default descriptions for input and output
+    options['input']['description'] = 'Folder of document represented as a single text file to be classified.'
+    options['input']['input_name'] = '<input_folder>'
+    options['output']['description'] = 'An output file name for the clustered sentence table.'
+    options['embedding'] = {
+        'order': 3,
+        'short': 'e',
+        'long': 'embedding',
+        'input_name': '<embedding_file>',
+        'description': 'The file containing the vector space embedded vocabulary.',
+        'optional': False
+    }
+    options['weightings'] = {
+        'order': 4,
+        'short': 'w',
+        'long': 'weightings',
+        'input_name': '<weightings_file>',
+        'description': 'The file containing the vocabulary word weightings.',
+        'optional': False
+    }
+    options['cluster_centers'] = {
+        'order': 5,
+        'short': 'c',
+        'long': 'cluster_centers',
+        'input_name': '<cluster_centers>',
+        'description': 'A file for cluster center vectors. Created by extract_cluster_centers.py',
+        'optional': False
+    }
+    return options
+
 # newline

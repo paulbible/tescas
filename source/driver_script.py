@@ -13,6 +13,7 @@ def main():
     # use a unique folder for each modeling / training data set.
     data_set_folder = 'sotu'
     # data_set_folder = 'ATE'
+    test_set_folder = 'test'
 
     # a text file providing an ordered list of speeches
     # this file should be in the speeches folder
@@ -20,12 +21,13 @@ def main():
     # data_set_document_list = 'ATE_order_list.txt'
     embedding = 'glove.6B.50d.txt'
     save_cluster_plot = True
-    cluster_number = 23
+    cluster_number = 123
+    # cluster_number = 23
     # cluster_number = 16
 
     #############################################################
     # Configure which stages to run in the processing pipeline
-    stages = 7      # total number of stages
+    stages = 8      # total number of stages
     # # The pipeline stages are:
     # 0 Calculate word weightings
     # 1 Explore the corpus clustering plot, helps choose number of clusters
@@ -34,12 +36,13 @@ def main():
     # 4 Summarize the cluster content using core sentences
     # 5 Convert clustered sentences into cluster count matrix
     # 6 Extract central vectors for nearest neighbor classification.
+    # 7 Classify test data with cluster centers.
 
     # # run all stages
     # stages_to_run = set(list(range(stages)))
 
     # set the following list to run specific parts of the pipeline
-    stages_to_run = {6}
+    stages_to_run = {3, 4}
 
     #############################################################
     # Set up your environment here
@@ -92,6 +95,15 @@ def main():
     # Classification files, center vectors
     central_vectors_name = data_set_folder + '_center_vectors.csv'
     central_vectors_filename = os.path.join(run_output_folder_path, central_vectors_name)
+
+    test_folder = os.path.join(speeches_folder, test_set_folder)
+
+    test_sentence_clusters_name = test_set_folder + '_clustered_sentences.csv'
+    test_sentence_clusters_filename = os.path.join(run_output_folder_path, test_sentence_clusters_name)
+
+
+    #########################################################################################
+    ## BEGIN PIPELINE
 
     ######################################
     # ##### Stage 0: Word Weightings #####
@@ -191,8 +203,23 @@ def main():
                 '-w', word_weight_file,
                 '-k', str(cluster_number)]
         print('## running: ', ' '.join(args))
-        # subprocess.run(args)
+        subprocess.run(args)
         print('## completed stage 6')
+        print()
+
+    ###############################################################
+    # ##### Stage 7: Classify Sentences with Cluster Centers  #####
+    if 7 in stages_to_run:
+        print('##### Classifying Sentences in', os.path.basename(test_folder))
+        args = [python_command, 'classify_sentences_nearest_center.py',
+                '-i', test_folder,
+                '-o', test_sentence_clusters_filename,
+                '-e', embedding_filename,
+                '-w', word_weight_file,
+                '-c', central_vectors_filename]
+        print('## running: ', ' '.join(args))
+        # subprocess.run(args)
+        print('## completed stage 2')
         print()
 
 
