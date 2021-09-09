@@ -12,7 +12,9 @@ from matplotlib.figure import Figure
 import embedding_tools as et
 from scipy.cluster.hierarchy import linkage
 from scipy.spatial.distance import pdist
-from threading import *
+import pandas
+import pandastable
+# from threading import *
 
 
 class TescasGui:
@@ -51,6 +53,11 @@ class TescasGui:
         self.cluster_icon_image_raw = self.cluster_icon_image_raw.resize((48, 48), Image.ANTIALIAS)
         self.cluster_icon_image = ImageTk.PhotoImage(self.cluster_icon_image_raw)
 
+        # summary tool
+        self.summary_icon_image_raw = Image.open('../data/resources/images/summary_clipboard.png')
+        self.summary_icon_image_raw = self.summary_icon_image_raw.resize((48, 48), Image.ANTIALIAS)
+        self.summary_icon_image = ImageTk.PhotoImage(self.summary_icon_image_raw)
+
         # Create top level frame ###############
         top_frame = tk.Frame(self.root)
         top_frame.pack(fill=tk.X)
@@ -71,6 +78,10 @@ class TescasGui:
         cluster_button = tk.Button(button_frame, text='cluster', image=self.cluster_icon_image, compound="top",
                                    command=self.cluster_and_plot)
         cluster_button.pack(side=tk.TOP, fill=tk.X)
+
+        summary_button = tk.Button(button_frame, text='Summary', image=self.summary_icon_image, compound="top",
+                                   command=self.cluster_and_plot)
+        summary_button.pack(side=tk.TOP, fill=tk.X)
 
         # ### Middle frame content #################
         content_frame = tk.Frame(top_frame)
