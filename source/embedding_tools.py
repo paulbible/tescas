@@ -231,6 +231,10 @@ def build_sentence_database(input_folder):
     files_to_process = os.listdir(input_folder)
     for filename in files_to_process:
         full_filename = os.path.join(input_folder, filename)
+        # attempting to process a directory gives an error.
+        if os.path.isdir(full_filename):
+            continue
+
         with open(full_filename, encoding='utf-8', errors='ignore') as f:
             data = f.read()
             # get all sentences form the file

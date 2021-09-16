@@ -1,8 +1,9 @@
 import tkinter as tk
 import os
+import json
 import datetime
 from tkinter import Menu
-from tkinter.filedialog import askdirectory, askopenfilename
+from tkinter.filedialog import askdirectory, askopenfilename, asksaveasfile
 from tkinter.scrolledtext import ScrolledText
 from PIL import Image, ImageTk
 import numpy as np
@@ -37,6 +38,7 @@ class TescasGui:
         self.root = tk.Tk()
         self.root.title('TESCAS')
 
+        # figure width, 4 inches, this makes the matplot labels readable.
         self.fig_width = 4
         self.fig_height = 4
 
@@ -58,6 +60,18 @@ class TescasGui:
         self.summary_icon_image_raw = self.summary_icon_image_raw.resize((48, 48), Image.ANTIALIAS)
         self.summary_icon_image = ImageTk.PhotoImage(self.summary_icon_image_raw)
 
+        # Create a menu bar ####################
+        self.menu_bar = tk.Menu(self.root)
+        self.file_menu = Menu(self.menu_bar, tearoff=0)
+        self.file_menu.add_command(label="Load Dataset", command=self.load_data_set_command)
+        self.file_menu.add_command(label="Load Embedding", command=self.load_embedding_file_command)
+        self.file_menu.add_command(label="Save Session", command=self.save_session)
+        self.file_menu.add_command(label="Load Session", command=self.load_session)
+        self.menu_bar.add_cascade(label="File", menu=self.file_menu)
+
+        self.root.config(menu=self.menu_bar)
+
+
         # Create top level frame ###############
         top_frame = tk.Frame(self.root)
         top_frame.pack(fill=tk.X)
@@ -68,11 +82,11 @@ class TescasGui:
 
         load_embedding_button = tk.Button(button_frame, text='embedding', image=self.embedding_icon_image,
                                           compound="top",
-                                          command=self.load_embedding_file)
+                                          command=self.load_embedding_file_command)
         load_embedding_button.pack(side=tk.TOP, fill=tk.X)
 
         load_button = tk.Button(button_frame, text='load', image=self.loading_icon_image, compound="top",
-                           command=self.load_data_set)
+                                command=self.load_data_set_command)
         load_button.pack(side=tk.TOP, fill=tk.X)
 
         cluster_button = tk.Button(button_frame, text='cluster', image=self.cluster_icon_image, compound="top",
@@ -209,7 +223,7 @@ class TescasGui:
         '''
         if self.has_data_set() and self.has_embedding_file():
             base_name = os.path.basename(self.data_set_directory)
-            self.insert_text('Begin Building Sentence Embedding Databse for %s ...' % base_name)
+            self.insert_text('Begin Building Sentence Embedding Database for %s ...' % base_name)
             self.start_timestamp()
             self.root.update_idletasks()
             results = et.calculate_sentence_vectors_tfidf(self.data_set_directory,
@@ -223,52 +237,58 @@ class TescasGui:
             self.sentence_matrix = np.array(self.sentence_vectors_database)
 
     # ### Button commands ##############
-    def load_data_set(self):
+    def load_data_set_command(self):
         filepath = askdirectory(title='Choose your data set')
         if filepath:
-            print(filepath)
-            self.insert_text('Accessing %s' % filepath)
-            self.data_set_directory = filepath
-            self.update_data_set_label()
+            self.load_data_set(filepath)
 
-            filenames = os.listdir(filepath)
-            base_name = os.path.basename(filepath)
-            doc_count = len(filenames)
-            self.update_doc_count(doc_count)
-            self.insert_text('Documents found: %s' % str(doc_count))
+    def load_data_set(self, filepath):
+        print(filepath)
+        self.insert_text('Accessing %s' % filepath)
+        self.data_set_directory = filepath
+        self.update_data_set_label()
 
-            # Word Weighting Calculation
-            self.insert_text('Begin Word Weighting Calculation for %s ...' % base_name)
-            self.start_timestamp()
-            # call this to update the GUI while processing
-            self.root.update_idletasks()
-            self.word_weightings, sentence_count = et.calculate_tf_weightings(filepath)
-            self.insert_text('-- Word Weightings calculated for %s' % base_name)
-            self.end_timestamp()
-            self.root.update_idletasks()
+        filenames = os.listdir(filepath)
+        base_name = os.path.basename(filepath)
+        doc_count = len(filenames)
+        self.update_doc_count(doc_count)
+        self.insert_text('Documents found: %s' % str(doc_count))
 
-            # attempt to build sentence database
-            self.build_sentence_database()
+        # Word Weighting Calculation
+        self.insert_text('Begin Word Weighting Calculation for %s ...' % base_name)
+        self.start_timestamp()
+        # call this to update the GUI while processing
+        self.root.update_idletasks()
+        self.word_weightings, sentence_count = et.calculate_tf_weightings(filepath)
+        self.insert_text('-- Word Weightings calculated for %s' % base_name)
+        self.end_timestamp()
+        self.root.update_idletasks()
 
-    def load_embedding_file(self):
+        # attempt to build sentence database
+        self.build_sentence_database()
+
+    def load_embedding_file_command(self):
         filepath = askopenfilename(title='Choose your embedding file')
         if filepath:
-            print(filepath)
-            self.insert_text('Accessing embedding file %s' % filepath)
-            self.embedding_filename = filepath
-            base_name = os.path.basename(filepath)
-            self.update_embedding_label()
+            self.load_embedding_file(filepath)
 
-            # load the word embedding vectors
-            self.insert_text('Begin loading embedding vectors %s ...' % base_name)
-            self.start_timestamp()
-            self.root.update_idletasks()
-            self.word_map, self.embed_matrix_vectors = et.load_embeddings(self.embedding_filename)
-            self.end_timestamp()
-            self.root.update_idletasks()
+    def load_embedding_file(self, filepath):
+        print(filepath)
+        self.insert_text('Accessing embedding file %s' % filepath)
+        self.embedding_filename = filepath
+        base_name = os.path.basename(filepath)
+        self.update_embedding_label()
 
-            # attempt to build sentence database
-            self.build_sentence_database()
+        # load the word embedding vectors
+        self.insert_text('Begin loading embedding vectors %s ...' % base_name)
+        self.start_timestamp()
+        self.root.update_idletasks()
+        self.word_map, self.embed_matrix_vectors = et.load_embeddings(self.embedding_filename)
+        self.end_timestamp()
+        self.root.update_idletasks()
+
+        # attempt to build sentence database
+        self.build_sentence_database()
 
     def cluster_and_plot(self):
         if self.sentence_matrix is not None:
@@ -295,6 +315,39 @@ class TescasGui:
 
             # self.canvas.get_tk_widget().pack(side=tk.RIGHT, fill=tk.BOTH, expand=True)
             self.canvas.draw()
+
+    def save_session(self):
+        session = {}
+        if self.has_data_set():
+            session['dataset'] = self.data_set_directory
+
+        if self.has_embedding_file():
+            session['embedding'] = self.embedding_filename
+
+        if self.has_data_set() and self.has_embedding_file():
+            file = asksaveasfile(title='Save your session file.')
+            if file:
+                print(session)
+                json.dump(session, file)
+                file.close()
+        else:
+            tk.messagebox.showinfo(title='Session Incomplete',
+                                   message='You need both a data set and an embedding file for a complete session.')
+
+    def load_session(self):
+        filepath = askopenfilename(title='Choose your embedding file')
+        if filepath:
+            with open(filepath) as f:
+                session = json.load(f)
+
+            self.load_data_set(session['dataset'])
+            self.load_embedding_file(session['embedding'])
+
+
+
+
+
+
 
 
 gui = TescasGui()
