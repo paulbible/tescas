@@ -34,13 +34,15 @@ class TescasGui:
         self.sentence_labels = None
         self.sentence_matrix = None
 
+        self.cluster_table = None
+
         # tkinter app
         self.root = tk.Tk()
         self.root.title('TESCAS')
 
         # figure width, 4 inches, this makes the matplot labels readable.
-        self.fig_width = 4
-        self.fig_height = 4
+        # self.fig_width = 4
+        # self.fig_height = 4
 
         # ### Initialize images for buttons #################
         self.embedding_icon_image_raw = Image.open('../data/resources/images/vectors.png')
@@ -90,25 +92,33 @@ class TescasGui:
         load_button.pack(side=tk.TOP, fill=tk.X)
 
         cluster_button = tk.Button(button_frame, text='cluster', image=self.cluster_icon_image, compound="top",
-                                   command=self.cluster_and_plot)
+                                   command=self.cluster_and_plot_command)
         cluster_button.pack(side=tk.TOP, fill=tk.X)
 
         summary_button = tk.Button(button_frame, text='Summary', image=self.summary_icon_image, compound="top",
-                                   command=self.cluster_and_plot)
+                                   command=self.cluster_and_plot_command)
         summary_button.pack(side=tk.TOP, fill=tk.X)
 
         # ### Middle frame content #################
-        content_frame = tk.Frame(top_frame)
-        content_frame.pack(side=tk.LEFT)
-        # create figure
-        self.figure = Figure(figsize=(self.fig_width, self.fig_height))
-        # plt = figure.add_subplot(111)
-        # data = np.random.rand(100,2)
-        # plt.scatter(data[:, 0], data[:, 1])
+        # set up pandas table
+        self.content_frame = tk.Frame(top_frame)
+        self.content_frame.pack(side=tk.LEFT)
 
-        self.canvas = FigureCanvasTkAgg(self.figure, master=content_frame)
-        self.canvas.get_tk_widget().pack(side=tk.RIGHT, fill=tk.BOTH, expand=True)
-        self.canvas.draw()
+        self.pt_frame = tk.Frame(self.content_frame)
+        self.pt_frame.pack(fill=tk.BOTH, expand=1)
+        self.pandas_table_widget = pandastable.Table(self.pt_frame,
+                                                     showtoolbar=True, showstatusbar=True)
+        self.pandas_table_widget.show()
+        # self.content_frame.pack(side=tk.LEFT)
+        # # create figure
+        # self.figure = Figure(figsize=(self.fig_width, self.fig_height))
+        # # plt = figure.add_subplot(111)
+        # # data = np.random.rand(100,2)
+        # # plt.scatter(data[:, 0], data[:, 1])
+        #
+        # self.canvas = FigureCanvasTkAgg(self.figure, master=self.content_frame)
+        # self.canvas.get_tk_widget().pack(side=tk.RIGHT, fill=tk.BOTH, expand=True)
+        # self.canvas.draw()
 
         # ### Configure the bottom of application status bar. #################
         # Setting pack of the containing frame is important
@@ -121,7 +131,7 @@ class TescasGui:
         self.data_set_label_text.set('Data set:')
         self.dataset_label = tk.Label(status_frame, textvariable=self.data_set_label_text,
                                       anchor=tk.W,
-                                 highlightbackground='black', highlightthickness=1)
+                                      highlightbackground='black', highlightthickness=1)
         self.dataset_label.pack(side=tk.LEFT, fill=tk.X, expand=True)
 
         # embedding status label
@@ -290,6 +300,9 @@ class TescasGui:
         # attempt to build sentence database
         self.build_sentence_database()
 
+    def cluster_and_plot_command(self):
+        self.cluster_and_plot()
+
     def cluster_and_plot(self):
         if self.sentence_matrix is not None:
             self.insert_text('Begin clustering data set ...')
@@ -299,22 +312,23 @@ class TescasGui:
             z = linkage(y, 'ward')  # define linkage, how to group points together
             self.end_timestamp()
 
-            # ########## Plot and Save Figure ##########
+            # Calculate jump plot data
             last = z[-50:, 2]
             last_rev = last[::-1]
             indexes = np.arange(1, len(last) + 1)
-            plt = self.figure.add_subplot(111)
-            plt.plot(indexes, last_rev)
-
             acceleration = np.diff(last, 2)  # 2nd derivative of the distances
             acceleration_rev = acceleration[::-1]
-            plt.plot(indexes[:-2] + 1, acceleration_rev)
 
-            plt.set_label('Cluster SSE')
-            plt.set(xlabel='Cluster Number', ylabel='SSE')
+            # Pandas table
+            data = {'indexes': indexes[:-2],
+                    'sse': last_rev[:-2],
+                    'jump': acceleration_rev}
 
-            # self.canvas.get_tk_widget().pack(side=tk.RIGHT, fill=tk.BOTH, expand=True)
-            self.canvas.draw()
+            self.cluster_table = pandas.DataFrame(data)
+            print('cluster table', self.cluster_table)
+
+            self.pandas_table_widget.updateModel(pandastable.TableModel(self.cluster_table))
+            self.pandas_table_widget.redraw()
 
     def save_session(self):
         session = {}
@@ -342,12 +356,6 @@ class TescasGui:
 
             self.load_data_set(session['dataset'])
             self.load_embedding_file(session['embedding'])
-
-
-
-
-
-
 
 
 gui = TescasGui()
